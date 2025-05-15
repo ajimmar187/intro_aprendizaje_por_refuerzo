@@ -883,32 +883,43 @@ for action, count in action_counts.items():
 #### 4.6.3 Evaluación de la política óptima
 
 Una vez que tenemos la política óptima, es crucial evaluar su rendimiento para verificar que efectivamente mejora sobre las políticas aleatorias que probamos anteriormente.
+
+```python
+# Función para evaluar una política
+def evaluate_policy(env, policy, n_episodes=1000):
+    """
+    Evalúa el rendimiento de una política mediante simulación.
     
     Args:
         env: Entorno de Gymnasium
-        V: Vector de valores óptimos
-        gamma: Factor de descuento
+        policy: Vector de acciones para cada estado
+        n_episodes: Número de episodios a simular
         
     Returns:
-        policy: Vector de acciones óptimas para cada estado
+        success_rate: Tasa de éxito (porcentaje de episodios exitosos)
     """
-    n_states = env.observation_space.n
-    n_actions = env.action_space.n
-    policy = torch.zeros(n_states)
+    successes = 0
     
-    for state in range(n_states):
-        # Calcular valores Q para cada acción
-        Q = torch.zeros(n_actions)
+    for _ in range(n_episodes):
+        state, _ = env.reset()
+        done = False
         
-        for action in range(n_actions):
-            for trans_prob, next_state, reward, _ in env.env.P[state][action]:
-                Q[action] += trans_prob * (reward + gamma * V[next_state])
-        
-        # Seleccionar la acción con mayor valor
-        policy[state] = torch.argmax(Q)
-        
-    return policy
+        while not done:
+            action = int(policy[state].item())
+            state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            
+            if done and reward > 0:
+                successes += 1
+                
+    return successes / n_episodes
+
+# Evaluar la política óptima
+success_rate = evaluate_policy(env, optimal_policy, n_episodes=1000)
+print(f"Tasa de éxito con política óptima: {success_rate:.2%}")
 ```
+
+Con la política óptima, se logra una tasa de éxito cercana al 74%, lo que representa una mejora significativa respecto al 1.6% obtenido con políticas aleatorias.
 
 ### 4.7 Evaluación de la política óptima
 
@@ -1329,6 +1340,7 @@ La comparación entre iteración de valores e iteración de políticas revela in
 
 Este análisis demuestra que, para el entorno FrozenLake, ambos métodos son efectivos, pero pueden tener diferentes ventajas dependiendo de las prioridades específicas del problema.
 
+```python
 # Evaluar la política óptima
 success_rate = evaluate_policy(env, optimal_policy, n_episodes=1000)
 print(f"Tasa de éxito con política óptima: {success_rate:.2%}")
@@ -1336,9 +1348,9 @@ print(f"Tasa de éxito con política óptima: {success_rate:.2%}")
 
 Con la política óptima, se logra una tasa de éxito cercana al 74%, lo que representa una mejora significativa respecto al 1.6% obtenido con políticas aleatorias.
 
-### 4.8 Implementación de iteración de políticas
+### 4.8 Implementación del algoritmo de iteración de políticas
 
-Otro enfoque de programación dinámica es el algoritmo de iteración de políticas, que alterna entre evaluación y mejora de la política:
+Además del algoritmo de iteración de valores, existe otro enfoque clásico de programación dinámica llamado **iteración de políticas** (Policy Iteration). A diferencia de la iteración de valores, que actualiza directamente la función de valor óptima, la iteración de políticas alterna entre dos procesos:
 
 ```python
 def policy_evaluation(env, policy, gamma=0.99, threshold=1e-4):
