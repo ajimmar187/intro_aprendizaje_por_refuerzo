@@ -1141,9 +1141,7 @@ for _ in range(n_eval_episodes):
         state, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
         if done:
-            results['Política Q-learning'].append(reward)
-
-# Calcular tasas de victoria
+            results['Política Q-learning'].append(reward)    # Calcular tasas de victoria
 performance = {}
 for method, rewards in results.items():
     win_rate = sum(r == 1 for r in rewards) / n_eval_episodes
@@ -1166,11 +1164,9 @@ plt.tight_layout()
 plt.show()
 ```
 
----
+### 7.6 Evaluación de la política de Q-learning
 
-### ¿Qué tan buena es la política final?
-
-Simulamos 100,000 episodios:
+Para evaluar cuantitativamente el rendimiento de la política aprendida con Q-learning, simulamos múltiples episodios:
 
 ```python
 n_episode = 100000
@@ -1184,138 +1180,38 @@ for _ in range(n_episode):
 print(f'Probabilidad de ganar con Q-learning: {n_win_opt / n_episode:.5f}')
 ```
 
-**Resultado típico:**
-`Probabilidad de ganar con Q-learning: 0.42398`
+Este experimento generalmente muestra una tasa de victoria cercana al 42.4%, lo que representa una mejora significativa respecto a la política simple de plantarse en 18.
 
----
+### 7.7 Conclusiones sobre Q-learning
 
-### Resumen de esta sección
+El algoritmo Q-learning ofrece varias ventajas importantes para problemas de aprendizaje por refuerzo:
 
-* **Q-learning** aprende rápido, actualizando después de cada paso.
-* No necesita conocer el entorno.
-* Su política es cada vez mejor gracias a la exploración epsilon-greedy.
-* Aprendimos una política que **supera a una política simple** en Blackjack.
+* **Aprendizaje incremental**: Actualiza estimaciones después de cada paso sin esperar al final del episodio
+* **Independencia del modelo**: No requiere conocimiento previo del entorno
+* **Exploración eficiente**: La política epsilon-greedy permite balancear exploración y explotación
+* **Convergencia**: Bajo ciertas condiciones, converge a la política óptima
 
----
+Cuando comparamos los tres enfoques estudiados (política simple, Monte Carlo y Q-learning), observamos que tanto Monte Carlo como Q-learning superan significativamente a la política simple, mientras mantienen un rendimiento similar entre ellos para el problema de Blackjack.
 
-### Conclusión general del capítulo
+## 8. Síntesis y aplicación práctica
 
-**Narrador:** En este capítulo recorrimos el mundo del aprendizaje por refuerzo:
+### 8.1 Conclusión general
 
-* Aprendimos los conceptos básicos de **entorno, agente, estados, acciones y recompensas**.
-* Exploramos dos métodos clásicos: **programación dinámica (value/policy iteration)**.
-* Luego pasamos a métodos sin modelo: **Monte Carlo y Q-learning**.
-* Todo esto aplicado a entornos reales: **FrozenLake** y **Blackjack**.
+En este capítulo hemos explorado diferentes enfoques del aprendizaje por refuerzo:
 
-Perfecto. Vamos con la **Parte 7: Resumen final del capítulo 15 – Toma de decisiones en entornos complejos con Aprendizaje por Refuerzo**.
+* Comenzamos con los fundamentos teóricos: entornos, agentes, estados, acciones y recompensas
+* Implementamos métodos de programación dinámica que requieren conocer completamente el modelo del entorno (FrozenLake)
+* Avanzamos hacia métodos sin modelo como Monte Carlo, que aprenden directamente de episodios completos (Blackjack)
+* Finalmente, estudiamos Q-learning, que combina las ventajas de la actualización inmediata con la independencia del modelo
 
----
+Cada enfoque tiene sus fortalezas y limitaciones, siendo apropiado para diferentes tipos de problemas. La programación dinámica es ideal cuando conocemos perfectamente el entorno, Monte Carlo funciona bien en entornos estocásticos con episodios bien definidos, y Q-learning destaca en situaciones donde queremos aprendizaje inmediato sin depender del conocimiento del modelo.
 
-### 📘 Parte 7: Resumen Final del Capítulo 15
+El aprendizaje por refuerzo continúa siendo un campo en rápida evolución, con aplicaciones que van desde videojuegos hasta robótica, finanzas y sistemas de recomendación, proporcionando un marco poderoso para crear agentes inteligentes capaces de tomar decisiones óptimas en entornos complejos.
 
----
+### 8.2 Ejercicios propuestos
 
-#### 🧠 ¿Qué aprendimos?
-
-Este capítulo nos guió por los fundamentos y técnicas clave del **aprendizaje por refuerzo (Reinforcement Learning, RL)**, una poderosa rama del aprendizaje automático enfocada en la toma de decisiones óptimas **a través de la experiencia**.
-
----
-
-### 🧩 Elementos esenciales del aprendizaje por refuerzo
-
-* **Agente:** toma decisiones (ej. Mario, un coche autónomo).
-* **Entorno:** el mundo donde actúa el agente (un juego, una carretera).
-* **Acciones:** lo que el agente puede hacer.
-* **Estados:** la situación actual del entorno.
-* **Recompensas:** feedback numérico por las acciones tomadas.
-
-> 🎯 Objetivo: aprender una política que maximice la recompensa acumulada (returns), tomando decisiones óptimas a lo largo del tiempo.
-
----
-
-### ⚖️ Dos enfoques principales en RL
-
-| Enfoque                | ¿Qué aprende?                                                                          | Ejemplo conceptual                          |
-| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **Basado en política** | Aprende directamente qué acción tomar en cada estado (la política)                     | Enseñar a conducir una pista de carreras    |
-| **Basado en valores**  | Aprende el valor esperado de cada estado y elige acciones que lleven a estados mejores | Buscar el tesoro eligiendo caminos valiosos |
-
----
-
-### 🧊 Caso práctico 1: **FrozenLake**
-
-Un entorno donde el agente debe caminar sobre hielo resbaloso sin caer en agujeros.
-
-#### 🔧 Técnicas aplicadas:
-
-* **Iteración de valores:** calcula el valor de cada estado y deriva la política óptima.
-* **Iteración de políticas:** alterna entre evaluar y mejorar la política.
-
-> ✅ Ambos métodos requieren conocer el modelo del entorno (matriz de transiciones y recompensas).
-
----
-
-### 🃏 Caso práctico 2: **Blackjack**
-
-Juego de cartas donde el jugador toma decisiones con información parcial.
-
-#### 🧪 Técnicas aplicadas:
-
-1. **Monte Carlo (MC):**
-
-   * Aprende sin conocer el entorno.
-   * Usa el promedio de recompensas al final de los episodios.
-   * On-policy: mejora su política mientras la evalúa.
-
-2. **Q-learning:**
-
-   * También sin modelo.
-   * Actualiza los valores **después de cada paso**, no al final.
-   * Off-policy: aprende la política óptima aunque explore de forma aleatoria.
-
----
-
-### 📊 Comparación de técnicas
-
-| Técnica          | Requiere modelo | Aprende por episodios | Actualización inmediata | Tipo de política                             |
-| ---------------- | --------------- | --------------------- | ----------------------- | -------------------------------------------- |
-| Value Iteration  | ✅               | ❌                     | ✅                       | Determinista                                 |
-| Policy Iteration | ✅               | ❌                     | ✅                       | Determinista                                 |
-| Monte Carlo      | ❌               | ✅                     | ❌                       | On-policy (explora y mejora)                 |
-| Q-learning       | ❌               | ✅                     | ✅                       | Off-policy (aprende óptimo mientras explora) |
-
----
-
-### 📈 Resultados comparativos
-
-* **Política simple (Blackjack – plantarse en 18):** \~40% de victorias
-* **Política óptima con Monte Carlo:** \~43%
-* **Política óptima con Q-learning:** \~42.4%
-
----
-
-### 🧠 Conclusión
-
-> El aprendizaje por refuerzo nos permite crear **agentes inteligentes** que aprenden **experimentando y adaptándose** sin necesidad de reglas predefinidas del entorno.
-
-Desde métodos clásicos hasta técnicas modernas sin modelo, el RL ofrece un marco generalizable para resolver problemas de decisión complejos.
-
----
-
-### 📚 Ejercicios propuestos (traducidos):
-
-1. **¿Puedes intentar resolver el entorno FrozenLake 8x8 usando los algoritmos de iteración de valores o iteración de políticas?**
-2. **¿Puedes implementar la versión de evaluación Monte Carlo que promedia en *todas* las visitas (every-visit) en lugar de solo la primera (first-visit)?**
-
-¡Perfecto! Vamos a desarrollar los **dos ejercicios propuestos** en Python, paso a paso y comentados.
-
----
-
-## 8. Síntesis y Aplicación Práctica
-
-### 8.1 Implementación práctica: FrozenLake 8x8
-
-Para poner en práctica los conceptos aprendidos, resolveremos el entorno FrozenLake en su versión ampliada de 8x8. Esta implementación nos permitirá verificar la escalabilidad de los algoritmos de programación dinámica.
+#### 8.2.1 Resolución del entorno FrozenLake 8x8
+El primer ejercicio propuesto consiste en resolver el entorno FrozenLake en su versión ampliada de 8x8, utilizando los algoritmos de iteración de valores o iteración de políticas. Esta implementación nos permitirá verificar la escalabilidad de los métodos de programación dinámica en entornos más complejos.
 
 ```python
 import gymnasium as gym
@@ -1466,13 +1362,9 @@ V_pi, policy_pi = policy_iteration(env, gamma, threshold)
 print("Ejercicio 1B - Policy Iteration completado.")
 ```
 
----
+#### 8.2.2 Implementación de Monte Carlo Every-Visit
 
-### 8.2 Implementación avanzada: Monte Carlo Every-Visit
-
-El método Monte Carlo First-Visit solo actualiza el valor de un estado la primera vez que aparece en un episodio. La variante Every-Visit, por otro lado, actualiza el valor cada vez que se visita el estado, lo que puede proporcionar estimaciones más precisas en algunos contextos.
-
-A continuación se presenta una implementación del método Monte Carlo Every-Visit para el entorno Blackjack:
+El segundo ejercicio propuesto consiste en implementar la variante Every-Visit del método de evaluación Monte Carlo, que a diferencia del método First-Visit, actualiza el valor de un estado cada vez que aparece en un episodio, no solo la primera vez. Esta implementación puede proporcionar estimaciones más precisas en ciertos contextos.
 
 ```python
 import gymnasium as gym
