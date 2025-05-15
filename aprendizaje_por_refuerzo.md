@@ -1210,8 +1210,11 @@ El aprendizaje por refuerzo continúa siendo un campo en rápida evolución, con
 
 ### 8.2 Ejercicios propuestos
 
+A continuación se presentan dos ejercicios prácticos para consolidar los conceptos aprendidos en este capítulo.
+
 #### 8.2.1 Resolución del entorno FrozenLake 8x8
-El primer ejercicio propuesto consiste en resolver el entorno FrozenLake en su versión ampliada de 8x8, utilizando los algoritmos de iteración de valores o iteración de políticas. Esta implementación nos permitirá verificar la escalabilidad de los métodos de programación dinámica en entornos más complejos.
+
+El primer ejercicio consiste en resolver el entorno FrozenLake en su versión ampliada de 8x8, utilizando los algoritmos de iteración de valores o iteración de políticas. Esta implementación nos permitirá verificar la escalabilidad de los métodos de programación dinámica en entornos más complejos.
 
 ```python
 import gymnasium as gym
@@ -1312,59 +1315,10 @@ def evaluate_policy(env, policy, n_episodes=1000):
 success_rate = evaluate_policy(env, optimal_policy, n_episodes=1000)
 print(f"✓ Tasa de éxito con política óptima en FrozenLake8x8: {success_rate:.2%}")
 ```
-```
-
----
-
-### ✅ 1B. Policy Iteration en `FrozenLake8x8-v1`
-
-```python
-def policy_evaluation(env, policy, gamma, threshold):
-    n_state = policy.shape[0]
-    V = torch.zeros(n_state)
-    while True:
-        V_temp = torch.zeros(n_state)
-        for state in range(n_state):
-            action = int(policy[state].item())
-            for trans_prob, new_state, reward, _ in env.env.P[state][action]:
-                V_temp[state] += trans_prob * (reward + gamma * V[new_state])
-        if torch.max(torch.abs(V - V_temp)) < threshold:
-            break
-        V = V_temp.clone()
-    return V
-
-def policy_improvement(env, V, gamma):
-    n_state = env.observation_space.n
-    n_action = env.action_space.n
-    policy = torch.zeros(n_state)
-    for state in range(n_state):
-        q = torch.zeros(n_action)
-        for action in range(n_action):
-            for trans_prob, new_state, reward, _ in env.env.P[state][action]:
-                q[action] += trans_prob * (reward + gamma * V[new_state])
-        policy[state] = torch.argmax(q)
-    return policy
-
-def policy_iteration(env, gamma, threshold):
-    n_state = env.observation_space.n
-    n_action = env.action_space.n
-    policy = torch.randint(high=n_action, size=(n_state,)).float()
-    
-    while True:
-        V = policy_evaluation(env, policy, gamma, threshold)
-        new_policy = policy_improvement(env, V, gamma)
-        if torch.equal(new_policy, policy):
-            return V, new_policy
-        policy = new_policy
-
-# Ejecutar
-V_pi, policy_pi = policy_iteration(env, gamma, threshold)
-print("Ejercicio 1B - Policy Iteration completado.")
-```
 
 #### 8.2.2 Implementación de Monte Carlo Every-Visit
 
-El segundo ejercicio propuesto consiste en implementar la variante Every-Visit del método de evaluación Monte Carlo, que a diferencia del método First-Visit, actualiza el valor de un estado cada vez que aparece en un episodio, no solo la primera vez. Esta implementación puede proporcionar estimaciones más precisas en ciertos contextos.
+El segundo ejercicio consiste en implementar la variante Every-Visit del método de evaluación Monte Carlo, que a diferencia del método First-Visit, actualiza el valor de un estado cada vez que aparece en un episodio, no solo la primera vez. Esta implementación puede proporcionar estimaciones más precisas en ciertos contextos.
 
 ```python
 import gymnasium as gym
@@ -1483,8 +1437,7 @@ def visualize_value_function(V):
     
     # Crear visualización
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    
-    # Con As usable
+      # Con As usable
     im0 = axes[0].imshow(V_usable, cmap='viridis', extent=[1, 10, 12, 21])
     axes[0].set_title('Función de valor con As usable')
     axes[0].set_xlabel('Carta visible del crupier')
@@ -1505,9 +1458,10 @@ def visualize_value_function(V):
 print(f"Número de estados evaluados: {len(V)}")
 visualize_value_function(V)
 ```
-```
 
 ## 9. Resumen y Conclusiones
+
+En este último apartado, resumiremos los conceptos y técnicas clave explorados en el capítulo, presentaremos comparativas entre los distintos métodos estudiados y comentaremos las aplicaciones prácticas del aprendizaje por refuerzo.
 
 ### 9.1 Conceptos y métodos fundamentales del aprendizaje por refuerzo
 
@@ -1561,7 +1515,7 @@ El aprendizaje por refuerzo ha demostrado ser extraordinariamente potente en una
 - **Finanzas**: Trading algorítmico y gestión de carteras
 - **Medicina**: Dosificación personalizada y planes de tratamiento
 
-Las tendencias actuales apuntan hacia métodos más escalables, que integran aprendizaje profundo con RL (Deep Reinforcement Learning), y algoritmos más eficientes en términos de muestras.
+Las tendencias actuales apuntan hacia métodos más escalables que integran aprendizaje profundo con RL (Deep Reinforcement Learning) y algoritmos más eficientes en términos de muestras.
 
 ### 9.5 Recursos adicionales para profundizar
 
@@ -1586,85 +1540,3 @@ El aprendizaje por refuerzo sigue siendo un campo en rápida evolución, con nue
 ---
 
 *Este capítulo fue elaborado como parte del material educativo avanzado sobre inteligencia artificial y aprendizaje automático.*
-
----
-
-## ✅ Código para evaluar una política en FrozenLake8x8
-
-Este código usa **policy iteration** para obtener la política óptima y luego la **evalúa simulando 1,000 episodios**.
-
-```python
-import gymnasium as gym
-import torch
-import numpy as np
-
-# Inicializar entorno
-env = gym.make("FrozenLake8x8-v1", is_slippery=True)
-
-# Funciones de policy iteration
-def policy_evaluation(env, policy, gamma, threshold):
-    n_state = policy.shape[0]
-    V = torch.zeros(n_state)
-    while True:
-        V_temp = torch.zeros(n_state)
-        for state in range(n_state):
-            action = int(policy[state].item())
-            for trans_prob, new_state, reward, _ in env.env.P[state][action]:
-                V_temp[state] += trans_prob * (reward + gamma * V[new_state])
-        if torch.max(torch.abs(V - V_temp)) < threshold:
-            break
-        V = V_temp.clone()
-    return V
-
-def policy_improvement(env, V, gamma):
-    n_state = env.observation_space.n
-    n_action = env.action_space.n
-    policy = torch.zeros(n_state)
-    for state in range(n_state):
-        q = torch.zeros(n_action)
-        for action in range(n_action):
-            for trans_prob, new_state, reward, _ in env.env.P[state][action]:
-                q[action] += trans_prob * (reward + gamma * V[new_state])
-        policy[state] = torch.argmax(q)
-    return policy
-
-def policy_iteration(env, gamma=0.99, threshold=1e-4):
-    n_state = env.observation_space.n
-    n_action = env.action_space.n
-    policy = torch.randint(high=n_action, size=(n_state,)).float()
-    while True:
-        V = policy_evaluation(env, policy, gamma, threshold)
-        new_policy = policy_improvement(env, V, gamma)
-        if torch.equal(new_policy, policy):
-            return V, new_policy
-        policy = new_policy
-
-# Obtener política óptima
-_, optimal_policy = policy_iteration(env)
-
-# Simular política óptima
-def evaluate_policy(env, policy, n_episodes=1000):
-    success_count = 0
-    for _ in range(n_episodes):
-        state, _ = env.reset()
-        done = False
-        while not done:
-            action = int(policy[state].item())
-            state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-            if done and reward == 1.0:
-                success_count += 1
-    return success_count / n_episodes
-
-# Evaluar rendimiento
-success_rate = evaluate_policy(env, optimal_policy, n_episodes=1000)
-print(f"✔️ Tasa de éxito con política óptima en FrozenLake8x8: {success_rate:.2%}")
-```
-
----
-
-Este código debería darte un resultado como:
-
-```
-✔️ Tasa de éxito con política óptima en FrozenLake8x8: 75.3%
-```
